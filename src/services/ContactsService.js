@@ -1,16 +1,13 @@
-import delay from '../utils/delay';
+import HttpClient from './utils/HttpClient';
 
-class ContactService {
+class ContactsService {
+  constructor() {
+    this.httpClient = new HttpClient('http://localhost:3001');
+  }
+
   async listContacts(orderBy = 'asc') {
-    const response = await fetch(
-      `http://localhost:3001/contacts?orderBy=${orderBy}`,
-    );
-
-    await delay(2000);
-
-    const json = await response.json();
-    return json;
+    return this.httpClient.get(`/contacts?orderBy=${orderBy}`);
   }
 }
 
-export default new ContactService();
+export default new ContactsService();
