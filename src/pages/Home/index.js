@@ -1,3 +1,5 @@
+/* eslint-disable react/jsx-one-expression-per-line */
+/* eslint-disable no-nested-ternary */
 import {
   useState, useEffect, useMemo, useCallback,
 } from 'react';
@@ -7,13 +9,20 @@ import arrow from '../../assets/images/icons/arrow.svg';
 import edit from '../../assets/images/icons/edit.svg';
 import trash from '../../assets/images/icons/trash.svg';
 import sad from '../../assets/images/sad.svg';
+import emptyBox from '../../assets/images/empty-box.svg';
 
 import Loader from '../../components/Loader';
 import Button from '../../components/Button';
 import ContactsService from '../../services/ContactsService';
 
 import {
-  Card, InputSearchContainer, Container, Header, ListHeader, ErrorContainer,
+  Card,
+  InputSearchContainer,
+  Container,
+  Header,
+  ListHeader,
+  ErrorContainer,
+  EmptyListContainer,
 } from './styles';
 
 export default function Home() {
@@ -23,14 +32,18 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
-  const filteredContacts = useMemo(() => contacts.filter((contact) => (
-    contact.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )), [contacts, searchTerm]);
+  const filteredContacts = useMemo(
+    () => contacts.filter(
+      (contact) => contact.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    ),
+    [contacts, searchTerm],
+  );
 
   const loadContacts = useCallback(async () => {
     try {
       setIsLoading(true);
 
+      // const contactsList = []; await ContactsService.listContacts(orderBy);
       const contactsList = await ContactsService.listContacts(orderBy);
 
       setHasError(false);
@@ -47,9 +60,7 @@ export default function Home() {
   }, [loadContacts]);
 
   function handleToggleOrderBy() {
-    setOrderBy(
-      (prevState) => (prevState === 'asc' ? 'desc' : 'asc'),
-    );
+    setOrderBy((prevState) => (prevState === 'asc' ? 'desc' : 'asc'));
   }
 
   function handleChangeSearchTerm(event) {
@@ -63,17 +74,28 @@ export default function Home() {
   return (
     <Container>
       <Loader isLoading={isLoading} />
-      <InputSearchContainer>
-        <input
-          value={searchTerm}
-          type="text"
-          placeholder="Pesquise pelo nome..."
-          onChange={handleChangeSearchTerm}
-        />
-      </InputSearchContainer>
 
-      <Header hasError={hasError}>
-        {!hasError && (
+      {contacts.length > 0 && (
+        <InputSearchContainer>
+          <input
+            value={searchTerm}
+            type="text"
+            placeholder="Pesquise pelo nome..."
+            onChange={handleChangeSearchTerm}
+          />
+        </InputSearchContainer>
+      )}
+
+      <Header
+        justifyContent={
+          hasError
+            ? 'flex-end'
+            : contacts.length > 0
+              ? 'space-between'
+              : 'center'
+        }
+      >
+        {!hasError && contacts.length > 0 && (
           <strong>
             {filteredContacts.length}
             {filteredContacts.length === 1 ? ' contato' : ' contatos'}
@@ -98,13 +120,25 @@ export default function Home() {
 
       {!hasError && (
         <>
+          {(contacts.length < 1 && !isLoading) && (
+            <EmptyListContainer>
+              <img src={emptyBox} alt="Empty box" />
+
+              <p>
+                Você ainda não tem nenhum contato cadastrado!
+                Clique no botão <strong>Novo contato</strong> acima para
+                cadastrar o seu primeiro!
+              </p>
+            </EmptyListContainer>
+          )}
+
           {filteredContacts.length > 0 && (
-          <ListHeader orderBy={orderBy}>
-            <button type="button" onClick={handleToggleOrderBy}>
-              <span>Nome</span>
-              <img src={arrow} alt="Arrow" />
-            </button>
-          </ListHeader>
+            <ListHeader orderBy={orderBy}>
+              <button type="button" onClick={handleToggleOrderBy}>
+                <span>Nome</span>
+                <img src={arrow} alt="Arrow" />
+              </button>
+            </ListHeader>
           )}
 
           {filteredContacts.map((contact) => (
@@ -113,7 +147,7 @@ export default function Home() {
                 <div className="contact-name">
                   <strong>{contact.name}</strong>
                   {contact.category_name && (
-                  <small>{contact.category_name}</small>
+                    <small>{contact.category_name}</small>
                   )}
                 </div>
                 <span>{contact.email}</span>
@@ -132,7 +166,6 @@ export default function Home() {
           ))}
         </>
       )}
-
     </Container>
   );
 }
