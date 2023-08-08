@@ -24,15 +24,6 @@ const ContactForm = forwardRef(({ buttonLabel, onSubmit }, ref) => {
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useImperativeHandle(ref, () => ({
-    setFieldsValues: (contact) => {
-      setName(contact.name ?? '');
-      setEmail(contact.email ?? '');
-      setPhone(formatPhone(contact.phone) ?? '');
-      setCategoryId(contact.category_id ?? '');
-    },
-  }));
-
   const {
     errors,
     setError,
@@ -41,6 +32,21 @@ const ContactForm = forwardRef(({ buttonLabel, onSubmit }, ref) => {
   } = useErrors();
 
   const isFormValid = (name && errors.length === 0);
+
+  useImperativeHandle(ref, () => ({
+    setFieldsValues: (contact) => {
+      setName(contact.name ?? '');
+      setEmail(contact.email ?? '');
+      setPhone(formatPhone(contact.phone) ?? '');
+      setCategoryId(contact.category_id ?? '');
+    },
+    resetFields: () => {
+      setName('');
+      setEmail('');
+      setPhone('');
+      setCategories('');
+    },
+  }));
 
   useEffect(() => {
     async function loadCategories() {
